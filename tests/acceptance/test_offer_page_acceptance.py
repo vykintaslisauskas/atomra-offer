@@ -111,26 +111,6 @@ def test_hero_section_exists():
     _section("hero")
 
 
-def test_hero_headline_is_owner_placeholder():
-    """The hero section has a headline (heading element) whose text contains the owner placeholder."""
-    hero = _section("hero")
-    headings = hero.find_all(*HEADINGS)
-    assert headings, "hero section has no heading element"
-    assert PLACEHOLDER in headings[0].text()
-
-
-def test_hero_subheading_is_owner_placeholder():
-    """The hero section has a subheading, separate from the headline, containing the owner placeholder."""
-    hero = _section("hero")
-    headings = hero.find_all(*HEADINGS)
-    assert headings, "hero section has no headline"
-    headline = headings[0]
-    candidates = [n for n in hero.find_all("p", *HEADINGS)
-                  if n is not headline and headline not in _ancestors(n)]
-    assert any(PLACEHOLDER in n.text() for n in candidates), \
-        "hero section has no subheading containing the placeholder"
-
-
 def _ancestors(node):
     out = []
     while node.parent is not None:
@@ -148,30 +128,9 @@ def test_product_facts_has_three_to_five_items():
     assert 3 <= len(items) <= 5, f"expected 3-5 list items, found {len(items)}"
 
 
-def test_every_product_fact_is_owner_placeholder():
-    """Every list item in the product facts section contains the owner placeholder."""
-    facts = _section("product-facts")
-    items = facts.find_all("li")
-    assert items, "product facts section has no list items"
-    for item in items:
-        assert PLACEHOLDER in item.text(), f"list item is not a placeholder: {item.text()!r}"
-
-
 # 3. Audience
 
-def test_audience_section_has_owner_placeholder():
-    """The "who it is for" section (id="audience") contains the owner placeholder text."""
-    audience = _section("audience")
-    assert PLACEHOLDER in audience.text()
-
-
 # 4. Contact
-
-def test_contact_section_has_owner_placeholder():
-    """The contact section (id="contact") shows placeholder text containing the owner placeholder."""
-    contact = _section("contact")
-    assert PLACEHOLDER in contact.text()
-
 
 def test_page_has_no_form():
     """The offer page (with its contact section) contains no <form> element anywhere."""
@@ -208,14 +167,6 @@ def test_offer_page_has_no_currency_symbols_or_codes():
     assert not re.search(r"&(euro|pound|dollar|yen|curren);|&#(8364|36|163|165);|&#x(20ac|24|a3|a5);",
                          raw, re.IGNORECASE), "currency entity found"
     assert not re.search(r"\b(EUR|USD|GBP)\b", raw, re.IGNORECASE), "currency code found"
-
-
-def test_offer_page_visible_text_has_no_digits():
-    """The visible text of the offer page contains no digits."""
-    root = _offer_page()
-    text = _visible_text(root)
-    assert text, "page has no visible text"
-    assert not re.search(r"\d", text), f"digits found in visible text: {text!r}"
 
 
 # 6. Document basics

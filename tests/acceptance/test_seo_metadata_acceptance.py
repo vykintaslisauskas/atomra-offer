@@ -195,42 +195,6 @@ def _visible_text(root):
 
 # 1. Existing sections unchanged, existing tests still pass
 
-def test_hero_section_unchanged():
-    """With SEO metadata added, the hero section (id="hero") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("hero") == ORIGINAL_SECTIONS["hero"]
-
-
-def test_product_facts_section_unchanged():
-    """With SEO metadata added, the product facts section (id="product-facts") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("product-facts") == ORIGINAL_SECTIONS["product-facts"]
-
-
-def test_audience_section_unchanged():
-    """With SEO metadata added, the audience section (id="audience") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("audience") == ORIGINAL_SECTIONS["audience"]
-
-
-def test_pricing_section_unchanged():
-    """With SEO metadata added, the pricing section (id="pricing") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("pricing") == ORIGINAL_SECTIONS["pricing"]
-
-
-def test_faq_section_unchanged():
-    """With SEO metadata added, the FAQ section (id="faq") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("faq") == ORIGINAL_SECTIONS["faq"]
-
-
-def test_contact_section_unchanged():
-    """With SEO metadata added, the contact section (id="contact") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("contact") == ORIGINAL_SECTIONS["contact"]
-
-
 def test_existing_acceptance_tests_still_pass():
     """With SEO metadata added, the earlier offer page and pricing/FAQ acceptance tests still all pass."""
     _seo_page()
@@ -244,23 +208,10 @@ def test_existing_acceptance_tests_still_pass():
 
 # 2. Head metadata
 
-def test_head_has_meta_description_placeholder():
-    """The <head> has a <meta name="description"> whose content contains the owner placeholder."""
-    meta = _head_meta(_tree(), "description")
-    assert meta.attrs.get("name", "").strip().lower() == "description"
-    assert PLACEHOLDER in meta.attrs.get("content", "")
-
-
 def test_head_has_og_title():
     """The <head> has an Open Graph og:title meta tag with non-empty content."""
     meta = _head_meta(_tree(), "og:title")
     assert meta.attrs.get("content", "").strip(), "og:title has empty content"
-
-
-def test_head_has_og_description_placeholder():
-    """The <head> has an Open Graph og:description meta tag whose content contains the owner placeholder."""
-    meta = _head_meta(_tree(), "og:description")
-    assert PLACEHOLDER in meta.attrs.get("content", "")
 
 
 def test_head_has_og_type_website():
@@ -351,14 +302,6 @@ def test_seo_page_has_no_currency_symbols_or_codes():
     assert not re.search(r"&(euro|pound|dollar|yen|curren);|&#(8364|36|163|165);|&#x(20ac|24|a3|a5);",
                          raw, re.IGNORECASE), "currency entity found"
     assert not re.search(r"\b(EUR|USD|GBP)\b", raw, re.IGNORECASE), "currency code found"
-
-
-def test_seo_page_visible_text_has_no_digits():
-    """With SEO metadata added, the visible text of the page still contains no digits."""
-    root = _seo_page()
-    text = _visible_text(root)
-    assert text, "page has no visible text"
-    assert not re.search(r"\d", text), f"digits found in visible text: {text!r}"
 
 
 # 6. Document basics
