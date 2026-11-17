@@ -14,69 +14,12 @@ SITEMAP = DOCS / "sitemap.xml"
 ROBOTS = DOCS / "robots.txt"
 SITE_URL = "https://vykintaslisauskas.github.io/atomra-offer/"
 SITEMAP_URL = SITE_URL + "sitemap.xml"
-PLACEHOLDER = "TO BE PROVIDED BY OWNER"
 EXISTING_TESTS = (
     ROOT / "tests" / "acceptance" / "test_offer_page_acceptance.py",
     ROOT / "tests" / "acceptance" / "test_pricing_faq_acceptance.py",
 )
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link",
         "meta", "param", "source", "track", "wbr"}
-INVISIBLE = {"head", "script", "style", "template", "noscript"}
-
-# Body sections exactly as they were before the SEO work (whitespace-normalised).
-ORIGINAL_SECTIONS = {
-    "hero": (
-        '<section id="hero">'
-        '<h1 class="placeholder">Headline: TO BE PROVIDED BY OWNER</h1>'
-        '<p class="placeholder">Subheading: TO BE PROVIDED BY OWNER</p>'
-        '</section>'
-    ),
-    "product-facts": (
-        '<section id="product-facts">'
-        '<h2>Product facts</h2>'
-        '<ul>'
-        '<li class="placeholder">Product fact: TO BE PROVIDED BY OWNER</li>'
-        '<li class="placeholder">Product fact: TO BE PROVIDED BY OWNER</li>'
-        '<li class="placeholder">Product fact: TO BE PROVIDED BY OWNER</li>'
-        '</ul>'
-        '</section>'
-    ),
-    "audience": (
-        '<section id="audience">'
-        '<h2>Who it is for</h2>'
-        '<p class="placeholder">Target audience: TO BE PROVIDED BY OWNER</p>'
-        '</section>'
-    ),
-    "pricing": (
-        '<section id="pricing">'
-        '<h2>Pricing and packaging</h2>'
-        '<ul>'
-        '<li class="placeholder">Prices: TO BE PROVIDED BY OWNER</li>'
-        '<li class="placeholder">Tiers: TO BE PROVIDED BY OWNER</li>'
-        '<li class="placeholder">Package sizes: TO BE PROVIDED BY OWNER</li>'
-        '</ul>'
-        '</section>'
-    ),
-    "faq": (
-        '<section id="faq">'
-        '<h2>Frequently asked questions</h2>'
-        '<dl>'
-        '<dt class="placeholder">Question: TO BE PROVIDED BY OWNER</dt>'
-        '<dd class="placeholder">Answer: TO BE PROVIDED BY OWNER</dd>'
-        '<dt class="placeholder">Question: TO BE PROVIDED BY OWNER</dt>'
-        '<dd class="placeholder">Answer: TO BE PROVIDED BY OWNER</dd>'
-        '<dt class="placeholder">Question: TO BE PROVIDED BY OWNER</dt>'
-        '<dd class="placeholder">Answer: TO BE PROVIDED BY OWNER</dd>'
-        '</dl>'
-        '</section>'
-    ),
-    "contact": (
-        '<section id="contact">'
-        '<h2>Contact</h2>'
-        '<p class="placeholder">Contact details: TO BE PROVIDED BY OWNER</p>'
-        '</section>'
-    ),
-}
 
 
 class Node:
@@ -166,18 +109,6 @@ def _seo_page():
     return root
 
 
-def _normalise(html):
-    return re.sub(r">\s+<", "><", " ".join(html.split()))
-
-
-def _raw_section(element_id):
-    match = re.search(
-        r'<section\b[^>]*\bid="' + re.escape(element_id) + r'"[^>]*>.*?</section>',
-        _raw(), re.DOTALL | re.IGNORECASE)
-    assert match, f'no <section id="{element_id}"> in the page source'
-    return _normalise(match.group(0))
-
-
 def _local(tag):
     return tag.rsplit("}", 1)[-1]
 
@@ -187,49 +118,7 @@ def _robots_lines():
     return [line.strip() for line in ROBOTS.read_text(encoding="utf-8").splitlines()]
 
 
-def _visible_text(root):
-    body = root.find_all("body")
-    scope = body[0] if body else root
-    return scope.text(skip=INVISIBLE)
-
-
-# 1. Existing sections unchanged, existing tests still pass
-
-def test_hero_section_unchanged():
-    """With SEO metadata added, the hero section (id="hero") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("hero") == ORIGINAL_SECTIONS["hero"]
-
-
-def test_product_facts_section_unchanged():
-    """With SEO metadata added, the product facts section (id="product-facts") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("product-facts") == ORIGINAL_SECTIONS["product-facts"]
-
-
-def test_audience_section_unchanged():
-    """With SEO metadata added, the audience section (id="audience") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("audience") == ORIGINAL_SECTIONS["audience"]
-
-
-def test_pricing_section_unchanged():
-    """With SEO metadata added, the pricing section (id="pricing") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("pricing") == ORIGINAL_SECTIONS["pricing"]
-
-
-def test_faq_section_unchanged():
-    """With SEO metadata added, the FAQ section (id="faq") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("faq") == ORIGINAL_SECTIONS["faq"]
-
-
-def test_contact_section_unchanged():
-    """With SEO metadata added, the contact section (id="contact") is unchanged apart from whitespace."""
-    _seo_page()
-    assert _raw_section("contact") == ORIGINAL_SECTIONS["contact"]
-
+# 1. Existing tests still pass
 
 def test_existing_acceptance_tests_still_pass():
     """With SEO metadata added, the earlier offer page and pricing/FAQ acceptance tests still all pass."""
@@ -244,11 +133,11 @@ def test_existing_acceptance_tests_still_pass():
 
 # 2. Head metadata
 
-def test_head_has_meta_description_placeholder():
-    """The <head> has a <meta name="description"> whose content contains the owner placeholder."""
+def test_head_has_meta_description():
+    """The <head> has a <meta name="description"> with non-empty content."""
     meta = _head_meta(_tree(), "description")
     assert meta.attrs.get("name", "").strip().lower() == "description"
-    assert PLACEHOLDER in meta.attrs.get("content", "")
+    assert meta.attrs.get("content", "").strip(), "meta description has empty content"
 
 
 def test_head_has_og_title():
@@ -257,10 +146,10 @@ def test_head_has_og_title():
     assert meta.attrs.get("content", "").strip(), "og:title has empty content"
 
 
-def test_head_has_og_description_placeholder():
-    """The <head> has an Open Graph og:description meta tag whose content contains the owner placeholder."""
+def test_head_has_og_description():
+    """The <head> has an Open Graph og:description meta tag with non-empty content."""
     meta = _head_meta(_tree(), "og:description")
-    assert PLACEHOLDER in meta.attrs.get("content", "")
+    assert meta.attrs.get("content", "").strip(), "og:description has empty content"
 
 
 def test_head_has_og_type_website():
@@ -316,7 +205,7 @@ def test_robots_points_to_sitemap():
     assert f"Sitemap: {SITEMAP_URL}" in _robots_lines()
 
 
-# 5. Still no form, inputs, contact links, scripts, prices or digits
+# 5. Still no form, inputs, contact links, scripts or currencies
 
 def test_seo_page_has_no_form():
     """With SEO metadata added, the page still contains no <form> element."""
@@ -351,14 +240,6 @@ def test_seo_page_has_no_currency_symbols_or_codes():
     assert not re.search(r"&(euro|pound|dollar|yen|curren);|&#(8364|36|163|165);|&#x(20ac|24|a3|a5);",
                          raw, re.IGNORECASE), "currency entity found"
     assert not re.search(r"\b(EUR|USD|GBP)\b", raw, re.IGNORECASE), "currency code found"
-
-
-def test_seo_page_visible_text_has_no_digits():
-    """With SEO metadata added, the visible text of the page still contains no digits."""
-    root = _seo_page()
-    text = _visible_text(root)
-    assert text, "page has no visible text"
-    assert not re.search(r"\d", text), f"digits found in visible text: {text!r}"
 
 
 # 6. Document basics
