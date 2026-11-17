@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://vykintaslisauskas.github.io/atomra-offer/sitemap.xml
